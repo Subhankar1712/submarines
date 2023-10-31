@@ -1,0 +1,47 @@
+name: Label Issues
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Issue Content
+        id: issue_content
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const issue = github.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const issueBody = issue.data.body.toLowerCase();
+            let labelToAdd = "";
+
+            if (issueBody.includes("bug")) {
+              labelToAdd = "bug";
+            }
+            if (issueBody.includes("feature")) {
+              labelToAdd = "feature";
+            }
+
+            console.log(`Label to add: ${labelToAdd}`);
+            console.log(`Issue Body: ${issueBody}`);
+
+            if (labelToAdd !== "") {
+              const addLabelResponse = github.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: [labelToAdd]
+              });
+              console.log(addLabelResponse);
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
