@@ -4,24 +4,22 @@ on:
   issues:
     types:
       - opened
+      - edited
 
 jobs:
   label:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check for Issue Content
-        id: issue_content
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const issue = github.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
+      - name: Check for Issue Content and Label
+        uses: actions/checkout@v2
+      - name: Label Issues
+        run: |
+          const { context, github } = require('@actions/github');
+          const issue = context.payload.issue;
 
-            const issueBody = issue.data.body.toLowerCase();
+          if (issue) {
+            const issueBody = issue.body.toLowerCase();
             let labelToAdd = "";
 
             if (issueBody.includes("bug")) {
@@ -34,14 +32,4 @@ jobs:
             console.log(`Label to add: ${labelToAdd}`);
             console.log(`Issue Body: ${issueBody}`);
 
-            if (labelToAdd !== "") {
-              const addLabelResponse = github.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                labels: [labelToAdd]
-              });
-              console.log(addLabelResponse);
-            }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            if (labelToAdd !== "")
