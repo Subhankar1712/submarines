@@ -1,0 +1,35 @@
+name: Label Issues
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Issue Content and Label
+        uses: actions/checkout@v2
+      - name: Label Issues
+        run: |
+          const { context, github } = require('@actions/github');
+          const issue = context.payload.issue;
+
+          if (issue) {
+            const issueBody = issue.body.toLowerCase();
+            let labelToAdd = "";
+
+            if (issueBody.includes("bug")) {
+              labelToAdd = "bug";
+            }
+            if (issueBody.includes("feature")) {
+              labelToAdd = "feature";
+            }
+
+            console.log(`Label to add: ${labelToAdd}`);
+            console.log(`Issue Body: ${issueBody}`);
+
+            if (labelToAdd !== "")
